@@ -1,6 +1,20 @@
 import psutil
 import time
 import os
+import mysql.connector
+
+mydb = mysql.connector.connect(
+    host = "localhost",
+    user = "aluno",
+    password = "sptech",
+    port = 3306,
+    database = "testeAPI"
+)
+
+mycursor = mydb.cursor()
+
+mycursor.execute("CREATE TABLE IF NOT EXISTS registro(id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,  mac_address VARCHAR(100), speed INT, mtu DECIMAL(5,2)," 
+                 "isup VARCHAR(3), uploadStat DECIMAL(5,2), downloadStat DECIMAL(5,2), dataSent DECIMAL(5,2), dataRecv DECIMAL(5,2))")
 
 size = ['bytes', 'KB', 'MB', 'GB', 'TB']
 def getSize(bytes):
@@ -9,14 +23,14 @@ def getSize(bytes):
             return f"{bytes:.1f}"
         bytes /= 1024
 
-netStats1 = psutil.net_io_counters()
+# netStats1 = psutil.net_io_counters()
+# stats = psutil.net_if_stats()
 
-dataSent = netStats1.bytes_sent
-dataRecv = netStats1.bytes_recv
+# dataSent = netStats1.bytes_sent
+# dataRecv = netStats1.bytes_recv
 
-stats = psutil.net_if_stats()
 
-addresses = psutil.net_if_addrs()
+# addresses = psutil.net_if_addrs()
 
 import fcntl
 import socket
@@ -29,6 +43,12 @@ def getHwAddr(ifname):
     return ':'.join('%02x' % b for b in info[18:24])
 
 while True:
+    netStats1 = psutil.net_io_counters()
+    dataSent = netStats1.bytes_sent
+    dataRecv = netStats1.bytes_recv
+    addresses = psutil.net_if_addrs()
+    addresses = psutil.net_if_addrs()
+    stats = psutil.net_if_stats()
     time.sleep(1)
     os.system("clear")
 
@@ -52,7 +72,6 @@ while True:
     print("\n")
     print("-"*30)
     print("\n")
-
     netStats2 = psutil.net_io_counters()
     
     uploadStat = netStats2.bytes_sent - dataSent
@@ -62,7 +81,14 @@ while True:
     totalDataSent = netStats2.bytes_sent
     totalDataRecv = netStats2.bytes_recv
 
-    print("Upload", getSize(uploadStat)) #KB
-    print("Download", getSize(downloadStat)) #KB
+    # print("Upload", getSize(uploadStat)) #KB
+    # print("Download", getSize(downloadStat)) #KB
     print("Data Sent", getSize(dataSent)) #MB
     print("Data Recive", getSize(dataRecv)) #MB
+    print(st.speed)
+    # mycursor.execute(f"INSERT INTO registro (mac_address, dataSent, dataRecv) VALUES"
+    #              f"('{mac_address}', {getSize(dataSent)}, {getSize(dataRecv)})")
+    # mydb.commit()
+    print(mycursor.rowcount, "record inserted.")
+
+    
