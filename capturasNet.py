@@ -13,6 +13,7 @@ mydb = mysql.connector.connect(
 
 mycursor = mydb.cursor()
 
+
 mycursor.execute("CREATE TABLE IF NOT EXISTS registro(id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,  mac_address VARCHAR(100), speed INT, mtu DECIMAL(5,2)," 
                  "isup VARCHAR(3), uploadStat DECIMAL(5,2), downloadStat DECIMAL(5,2), dataSent DECIMAL(5,2), dataRecv DECIMAL(5,2))")
 
@@ -86,9 +87,8 @@ while True:
     print("Data Sent", getSize(dataSent)) #MB
     print("Data Recive", getSize(dataRecv)) #MB
     print(st.speed)
-    # mycursor.execute(f"INSERT INTO registro (mac_address, dataSent, dataRecv) VALUES"
-    #              f"('{mac_address}', {getSize(dataSent)}, {getSize(dataRecv)})")
-    # mydb.commit()
+    mycursor.execute(f"INSERT INTO registro (mac_address, dataSent, dataRecv) VALUES ('{mac_address}', {getSize(dataSent)}, {getSize(dataRecv)})")
+    mydb.commit()
     print(mycursor.rowcount, "record inserted.")
 
     
