@@ -1,9 +1,49 @@
+# ---------------------------- CRAWLER ---------------------------- 
+from urllib.request import urlopen
+import sys
+
+try:
+    ip = sys.argv[1]
+
+    if ip:
+        url = f"http://ip-api.com/json/{ip}"
+
+        request = urlopen(url)
+        data = request.read().decode()
+
+        data = eval(data)
+
+        for i in data:
+            print(f"{f} == {data[i]}")
+
+except Exception as ex:
+    print(f"Error: {ex}")
+
+import requests
+
+# link do open_weather: https://openweathermap.org/
+
+API_KEY = "coloque sua API aqui" #pegar chave API
+cidade = "rio de janeiro"
+link = f"https://api.openweathermap.org/data/2.5/weather?q={cidade}&appid={API_KEY}&lang=pt_br"
+
+requisicao = requests.get(link)
+requisicao_dic = requisicao.json()
+descricao = requisicao_dic['weather'][0]['description']
+temperatura = requisicao_dic['main']['temp'] - 273.15
+print(descricao, f"{temperatura}ºC")
+
+
+
+# ---------------------------- PSUTIL ----------------------------
 import psutil
 import time
 import os
 import mysql.connector
 
-mydb = mysql.connector.connect(
+print(psutil.net_connections(ip))
+
+""" mydb = mysql.connector.connect(
     host = "localhost",
     user = "aluno",
     password = "sptech",
@@ -89,6 +129,4 @@ while True:
     print(st.speed)
     mycursor.execute(f"INSERT INTO registro (mac_address, dataSent, dataRecv) VALUES ('{mac_address}', {getSize(dataSent)}, {getSize(dataRecv)})")
     mydb.commit()
-    print(mycursor.rowcount, "record inserted.")
-
-    
+    print(mycursor.rowcount, "record inserted.") """
