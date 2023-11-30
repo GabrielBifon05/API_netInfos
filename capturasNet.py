@@ -1,49 +1,47 @@
 # ---------------------------- CRAWLER ---------------------------- 
 from urllib.request import urlopen
-import sys
+import json
 
 try:
-    ip = sys.argv[1]
+    import requests
+    ip = requests.get('https://api.ipify.org').text
+    print(f'IP Público: {ip}')
 
     if ip:
-        url = f"http://ip-api.com/json/{ip}"
+        url = f"http://ip-api.com/json/{ip}?fields=1821"
 
         request = urlopen(url)
         data = request.read().decode()
 
         data = eval(data)
-
-        for i in data:
-            print(f"{f} == {data[i]}")
+        # DATA é um "json", dict é o nome
+        estado = (list(data.values())[1]) # Estado (sigla)
+        cidade = (list(data.values())[3]) # Cidade
 
 except Exception as ex:
     print(f"Error: {ex}")
 
-import requests
+from bs4 import BeautifulSoup
 
-# link do open_weather: https://openweathermap.org/
-
-API_KEY = "coloque sua API aqui" #pegar chave API
-cidade = "rio de janeiro"
-link = f"https://api.openweathermap.org/data/2.5/weather?q={cidade}&appid={API_KEY}&lang=pt_br"
-
-requisicao = requests.get(link)
-requisicao_dic = requisicao.json()
-descricao = requisicao_dic['weather'][0]['description']
-temperatura = requisicao_dic['main']['temp'] - 273.15
-print(descricao, f"{temperatura}ºC")
+busca =f"A Previsão do tempo em {cidade} é de "
+url = f"https://www.google.com/search?q={busca}"
+r = requests.get(url)
+s= BeautifulSoup(r.text, "html.parser")
+update = s.find("div",class_="BNeawe").text
+a = (busca + update)
+print(f"Temperatura: {update}")
 
 
 
 # ---------------------------- PSUTIL ----------------------------
-import psutil
+"""import psutil
 import time
 import os
 import mysql.connector
 
 print(psutil.net_connections(ip))
 
-""" mydb = mysql.connector.connect(
+ mydb = mysql.connector.connect(
     host = "localhost",
     user = "aluno",
     password = "sptech",
