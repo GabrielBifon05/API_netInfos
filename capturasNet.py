@@ -44,7 +44,7 @@ while True:
         user = "aluno",
         password = "sptech",
         port = 3306,
-        database = "testeAPI"
+        database = "ScriptGCT"
     )
 
     mycursor = mydb.cursor()
