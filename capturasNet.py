@@ -1,6 +1,7 @@
 # ---------------------------- CRAWLER ---------------------------- 
 while True:
     from urllib.request import urlopen
+    from datetime import datetime
 
     try:
         import requests
@@ -49,9 +50,9 @@ while True:
 
     mycursor = mydb.cursor()
 
-    mycursor.execute("CREATE TABLE IF NOT EXISTS temperatura(id_temperatura INT PRIMARY KEY AUTO_INCREMENT NOT NULL, valor_temperatura DECIMAL(4,2));")
+    mycursor.execute("CREATE TABLE IF NOT EXISTS temperatura(id_temperatura INT PRIMARY KEY AUTO_INCREMENT NOT NULL, valor_temperatura DECIMAL(4,2), data_registro DATETIME);")
 
-    mycursor.execute("CREATE TABLE IF NOT EXISTS rede(id_rede INT PRIMARY KEY AUTO_INCREMENT NOT NULL,  mac_address VARCHAR(100), ip_publico VARCHAR(100), uploadStat DECIMAL(5,2), downloadStat DECIMAL(5,2), dataSent DECIMAL(5,2), dataRecv DECIMAL(5,2));")
+    mycursor.execute("CREATE TABLE IF NOT EXISTS rede(id_rede INT PRIMARY KEY AUTO_INCREMENT NOT NULL,  mac_address VARCHAR(100), ip_publico VARCHAR(100), uploadStat DECIMAL(5,2), downloadStat DECIMAL(5,2), dataSent DECIMAL(5,2), dataRecv DECIMAL(5,2), data_registro DATETIME);")
 
     size = ['bytes', 'KB', 'MB', 'GB', 'TB']
     def getSize(bytes):
@@ -123,10 +124,14 @@ while True:
     print("Data Sent", getSize(dataSent)) #MB
     print("Data Recive", getSize(dataRecv)) #MB
     print(st.speed)
-    mycursor.execute(f"INSERT INTO rede (mac_address, ip_publico, uploadStat, downloadStat, dataSent, dataRecv) VALUES ('{mac_address}', '{ip_address}', {getSize(uploadStat)}, {getSize(downloadStat)}, {getSize(dataSent)}, {getSize(dataRecv)});")
+
+    dataHoraNow = datetime.now()    
+
+
+    mycursor.execute(f"INSERT INTO rede (mac_address, ip_publico, uploadStat, downloadStat, dataSent, dataRecv, data_registro) VALUES ('{mac_address}', '{ip_address}', {getSize(uploadStat)}, {getSize(downloadStat)}, {getSize(dataSent)}, {getSize(dataRecv)}, '{dataHoraNow}');")
     mydb.commit()
     print(mycursor.rowcount, "rede inserted.")
 
-    mycursor.execute(f"INSERT INTO temperatura (valor_temperatura) VALUES ('{valorTemperatura}');")
+    mycursor.execute(f"INSERT INTO temperatura (valor_temperatura, data_registro) VALUES ('{valorTemperatura}', '{dataHoraNow}');")
     mydb.commit()
     print(mycursor.rowcount, "temperatura inserted.")
