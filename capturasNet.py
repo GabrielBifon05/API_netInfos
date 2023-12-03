@@ -1,4 +1,7 @@
 # ---------------------------- CRAWLER ---------------------------- 
+codigoServidor = input("Insira o código deste servidor:")
+
+
 while True:
     from urllib.request import urlopen
     from datetime import datetime
@@ -33,8 +36,24 @@ while True:
     print(f"Temperatura: {valorTemperatura}")
 
 
+    # ------------------ PSUTIL (mac_address, IP, upload, download, dataRecv, dataSent) -------------------
 
-    # ---------------------------- PSUTIL ----------------------------
+    import speedtest
+
+    st = speedtest.Speedtest()
+
+    vel_download = st.download() / 10**6
+    vel_upload = st.upload() / 10**6
+    ping = st.results.ping
+
+    print(f'  |Velocidade de download: {vel_download:.2f} Mbps|')
+    print(f'  |Velocidade de upload: {vel_upload:.2f} Mbps|')
+    print(f'  |Ping: {ping:.2f}|')
+    print("----------------------------------------")
+
+
+
+    # ------------------ PSUTIL (mac_address, IP, upload, download, dataRecv, dataSent) -------------------
     import psutil
     import time
     import os
@@ -50,9 +69,9 @@ while True:
 
     mycursor = mydb.cursor()
 
-    mycursor.execute("CREATE TABLE IF NOT EXISTS temperatura(id_temperatura INT PRIMARY KEY AUTO_INCREMENT NOT NULL, valor_temperatura DECIMAL(4,2), data_registro DATETIME, fk_servidor INT NOT NULL, FOREIGN KEY (fk_servidor) REFERENCES servidor (id_servidor));")
+    # mycursor.execute("CREATE TABLE IF NOT EXISTS temperatura(id_temperatura INT PRIMARY KEY AUTO_INCREMENT NOT NULL, valor_temperatura DECIMAL(4,2), data_registro DATETIME, fk_servidor INT NOT NULL, FOREIGN KEY (fk_servidor) REFERENCES servidor (id_servidor));")
 
-    mycursor.execute("CREATE TABLE IF NOT EXISTS rede(id_rede INT PRIMARY KEY AUTO_INCREMENT NOT NULL,  mac_address VARCHAR(100), ip_publico VARCHAR(100), uploadStat DECIMAL(5,2), downloadStat DECIMAL(5,2), dataSent DECIMAL(5,2), dataRecv DECIMAL(5,2), data_registro DATETIME, fk_servidor INT NOT NULL, FOREIGN KEY (fk_servidor) REFERENCES servidor (id_servidor));")
+    # mycursor.execute("CREATE TABLE IF NOT EXISTS rede(id_rede INT PRIMARY KEY AUTO_INCREMENT NOT NULL,  mac_address VARCHAR(100), ip_publico VARCHAR(100), vel_upload DECIMAL(4,2), vel_download DECIMAL(4,2), ping DECIMAL(4,2), uploadStat DECIMAL(5,2), downloadStat DECIMAL(5,2), dataSent DECIMAL(5,2), dataRecv DECIMAL(5,2), data_registro DATETIME, fk_servidor INT NOT NULL, FOREIGN KEY (fk_servidor) REFERENCES servidor (id_servidor));")
 
     size = ['bytes', 'KB', 'MB', 'GB', 'TB']
     def getSize(bytes):
@@ -128,10 +147,10 @@ while True:
     dataHoraNow = datetime.now()    
 
 
-    mycursor.execute(f"INSERT INTO rede (mac_address, ip_publico, uploadStat, downloadStat, dataSent, dataRecv, data_registro, fk_servidor) VALUES ('{mac_address}', '{ip_address}', {getSize(uploadStat)}, {getSize(downloadStat)}, {getSize(dataSent)}, {getSize(dataRecv)}, '{dataHoraNow}', 1);")
+    mycursor.execute(f"INSERT INTO rede (mac_address, ip_publico, vel_upload, vel_download, ping, uploadStat, downloadStat, dataSent, dataRecv, data_registro, codigo) VALUES ('{mac_address}', '{ip_address}',, {vel_upload:.2f}, {vel_download:.2f}, {ping:.2f}, {getSize(uploadStat)}, {getSize(downloadStat)}, {getSize(dataSent)}, {getSize(dataRecv)}, '{dataHoraNow}', {codigoServidor});")
     mydb.commit()
     print(mycursor.rowcount, "rede inserted.")
 
-    mycursor.execute(f"INSERT INTO temperatura (valor_temperatura, data_registro, fk_servidor) VALUES ('{valorTemperatura}', '{dataHoraNow}', 1);")
+    mycursor.execute(f"INSERT INTO temperatura (valor_temperatura, data_registro, codigo) VALUES ('{valorTemperatura}', '{dataHoraNow}', {codigoServidor});")
     mydb.commit()
     print(mycursor.rowcount, "temperatura inserted.")
