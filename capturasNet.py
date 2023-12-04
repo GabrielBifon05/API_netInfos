@@ -42,7 +42,8 @@ while True:
 
             data = eval(data)
             # DATA é um "json", dict é o nome
-            estado = (list(data.values())[1]) # Estado (sigla)
+            pais = (list(data.values())[0]) # País
+            estado = (list(data.values())[2]) # Estado
             cidade = (list(data.values())[3]) # Cidade
 
     except Exception as ex:
@@ -88,7 +89,7 @@ while True:
 
     mycursor = mydb.cursor()
 
-    # mycursor.execute("CREATE TABLE IF NOT EXISTS temperatura(id_temperatura INT PRIMARY KEY AUTO_INCREMENT NOT NULL, valor_temperatura DECIMAL(4,2), data_registro DATETIME, fk_servidor INT NOT NULL, FOREIGN KEY (fk_servidor) REFERENCES servidor (id_servidor));")
+    # mycursor.execute("CREATE TABLE IF NOT EXISTS localizacao(id_temperatura INT PRIMARY KEY AUTO_INCREMENT NOT NULL, pais VARCHAR(100), estado VARCHAR(100), cidade VARCHAR(100), valor_temperatura DECIMAL(4,2), data_registro DATETIME, fk_servidor INT NOT NULL, FOREIGN KEY (fk_servidor) REFERENCES servidor (id_servidor));")
 
     # mycursor.execute("CREATE TABLE IF NOT EXISTS rede(id_rede INT PRIMARY KEY AUTO_INCREMENT NOT NULL,  mac_address VARCHAR(100), ip_publico VARCHAR(100), vel_upload DECIMAL(4,2), vel_download DECIMAL(4,2), ping DECIMAL(4,2), uploadStat DECIMAL(5,2), downloadStat DECIMAL(5,2), dataSent DECIMAL(5,2), dataRecv DECIMAL(5,2), data_registro DATETIME, fk_servidor INT NOT NULL, FOREIGN KEY (fk_servidor) REFERENCES servidor (id_servidor));")
 
@@ -281,6 +282,6 @@ while True:
     # mydb.commit()
     # print(mycursor.rowcount, "rede inserted.")
 
-    # mycursor.execute(f"INSERT INTO temperatura (valor_temperatura, data_registro, codigo) VALUES ('{valorTemperatura}', '{dataHoraNow}', {codigoServidor});")
+    # mycursor.execute(f"INSERT INTO localizacao (pais, estado, cidade, valor_temperatura, data_registro, codigo) VALUES ('{valorTemperatura}', '{dataHoraNow}', {codigoServidor});")
     # mydb.commit()
     # print(mycursor.rowcount, "temperatura inserted.")
