@@ -57,13 +57,16 @@ while True:
     s= BeautifulSoup(r.text, "html.parser")
     valorTemperatura = s.find("div",class_="BNeawe").text
     valorTemperatura = valorTemperatura[0:2]
+    print(f"País: {pais}")
+    print(f"Estado: {estado}")
+    print(f"Cidade: {cidade}")
     print(f"Temperatura: {valorTemperatura}")
 
 
     # ------------------ SpeedTest (vel_download, vel_upload, ping) -------------------
 
 
-    st = speedtest.Speedtest()
+    st = speedtest.Speedtest(secure = True)
 
     vel_download = st.download() / 10**6
     vel_upload = st.upload() / 10**6
@@ -97,7 +100,7 @@ while True:
     def getSize(bytes):
         for unit in size:
             if bytes < 1024:
-                return f"{bytes:.1f}"
+                return bytes
             bytes /= 1024
 
     netStats1 = psutil.net_io_counters()
@@ -154,12 +157,11 @@ while True:
     totalDataSent = netStats2.bytes_sent
     totalDataRecv = netStats2.bytes_recv
 
-    print("Upload", getSize(uploadStat)) #KB
-    print("Download", getSize(downloadStat)) #KB
+    print("Upload", f"{getSize(uploadStat):.1}f") #KB
+    print("Download", f"{getSize(downloadStat):.1}f") #KB
 
-    print("Data Sent", getSize(dataSent)) #MB
-    print("Data Recive", getSize(dataRecv)) #MB
-    print(st.speed)
+    print("Data Sent", f"{getSize(dataSent):.2}f") #MB
+    print("Data Recive", f"{getSize(dataRecv):.2}f") #MB
 
     dataHoraNow = datetime.now()
 # ------------------ Alertas no JIRA/Slack -------------------
@@ -167,121 +169,121 @@ while True:
     if(vel_download < 100 ):
         mensagemVel_download = {"text": f"""
             ⚙️ === ALERTA❗️
-            Descrição => Envio de pacotes está sobrecarregando!
+            Descrição => Velocidade de download está sobrecarregando!
             """}
-    chatMonitoramentoVel_download = "https://hooks.slack.com/services/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"
-    postMsgVel_download = requests.post(chatMonitoramentoVel_download, data=json.dumps(mensagemVel_download))
+        chatMonitoramentoVel_download = "https://hooks.slack.com/services/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"
+        #postMsgVel_download = requests.post(chatMonitoramentoVel_download, data=json.dumps(mensagemVel_download))
 
-    issue_dict = {
+        issue_dict = {
             'project': {'key': 'SUP'},
             'summary': f"Rede com velocidade de download abaixo de {vel_download:.2f} Mbps!!!",
             'description': f'A rede do servidor {codigoServidor} está  velocidade de download abaixo de {vel_download:.2f} Mbps!!!',
             'issuetype': {"id":"10022"},
         }
-    new_issue = jira_connection.create_issue(fields=issue_dict)
+        #new_issue = jira_connection.create_issue(fields=issue_dict)
 
     if(vel_upload < 100 ):
         mensagemVel_upload = {"text": f"""
             ⚙️ === ALERTA❗️
-            Descrição => Envio de pacotes está sobrecarregando!
+            Descrição => Velocidade de upload está sobrecarregando!
             """}
-    chatMonitoramentoVel_upload = "https://hooks.slack.com/services/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"
-    postMsgVel_upload = requests.post(chatMonitoramentoVel_upload, data=json.dumps(mensagemVel_upload))
+        chatMonitoramentoVel_upload = "https://hooks.slack.com/services/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"
+        #postMsgVel_upload = requests.post(chatMonitoramentoVel_upload, data=json.dumps(mensagemVel_upload))
 
-    issue_dict = {
+        issue_dict = {
             'project': {'key': 'SUP'},
             'summary': f"Rede com velocidade de upload abaixo de {vel_upload:.2f} Mbps!!!",
             'description': f'A rede do servidor {codigoServidor} está  velocidade de upload abaixo de {vel_upload:.2f} Mbps!!!',
             'issuetype': {"id":"10022"},
         }
-    new_issue = jira_connection.create_issue(fields=issue_dict)
+        #new_issue = jira_connection.create_issue(fields=issue_dict)
 
     if(ping > 50 ):
         mensagemPing = {"text": f"""
             ⚙️ === ALERTA❗️
             Descrição => Envio de pacotes está sobrecarregando!
             """}
-    chatMonitoramentoPing = "https://hooks.slack.com/services/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"
-    postMsgPing = requests.post(chatMonitoramentoPing, data=json.dumps(mensagemPing))
+        chatMonitoramentoPing = "https://hooks.slack.com/services/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"
+        #postMsgPing = requests.post(chatMonitoramentoPing, data=json.dumps(mensagemPing))
 
-    issue_dict = {
+        issue_dict = {
             'project': {'key': 'SUP'},
             'summary': f"Rede com ping acima de {ping:.2f}!!!",
             'description': f'A rede do servidor {codigoServidor} está com ping acima de {ping:.2f}!!!',
             'issuetype': {"id":"10022"},
         }
-    new_issue = jira_connection.create_issue(fields=issue_dict)
+        #new_issue = jira_connection.create_issue(fields=issue_dict)
 
     if(getSize(uploadStat) > 70 ):
         mensagemUploadStat = {"text": f"""
             ⚙️ === ALERTA❗️
-            Descrição => Envio de pacotes está sobrecarregando!
+            Descrição => Estado de upload está sobrecarregando!
             """}
-    chatMonitoramentoUploadStat = "https://hooks.slack.com/services/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"
-    postMsgUploadStat = requests.post(chatMonitoramentoUploadStat, data=json.dumps(mensagemUploadStat))
+        chatMonitoramentoUploadStat = "https://hooks.slack.com/services/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"
+        #postMsgUploadStat = requests.post(chatMonitoramentoUploadStat, data=json.dumps(mensagemUploadStat))
     
-    issue_dict = {
+        issue_dict = {
             'project': {'key': 'SUP'},
-            'summary': f"Rede com estado de upload acima de {getSize(uploadStat)}!!!",
-            'description': f'A rede do servidor {codigoServidor} está estado de upload acima de {getSize(uploadStat)}!!!',
+            'summary': f"Rede com estado de upload acima de {f'{getSize(uploadStat):.1f}'}!!!",
+            'description': f'A rede do servidor {codigoServidor} está estado de upload acima de {f"{getSize(uploadStat):.1f}"}!!!',
             'issuetype': {"id":"10022"},
         }
-    new_issue = jira_connection.create_issue(fields=issue_dict)
+        #new_issue = jira_connection.create_issue(fields=issue_dict)
 
     if(getSize(downloadStat) > 70 ):
         mensagemDownloadStat = {"text": f"""
             ⚙️ === ALERTA❗️
             Descrição => Estado de download está sobrecarregando!
             """}
-    chatMonitoramentoDownloadStat = "https://hooks.slack.com/services/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"
-    postMsgDownloadStat = requests.post(chatMonitoramentoDownloadStat, data=json.dumps(mensagemDownloadStat))
+        chatMonitoramentoDownloadStat = "https://hooks.slack.com/services/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"
+        #postMsgDownloadStat = requests.post(chatMonitoramentoDownloadStat, data=json.dumps(mensagemDownloadStat))
     
-    issue_dict = {
+        issue_dict = {
             'project': {'key': 'SUP'},
-            'summary': f"Rede com estado de download acima de {getSize(downloadStat)}!!!",
-            'description': f'A rede do servidor {codigoServidor} está estado de download acima de {getSize(downloadStat)}!!!',
+            'summary': f"Rede com estado de download acima de {f'{getSize(downloadStat):.1f}'}!!!",
+            'description': f'A rede do servidor {codigoServidor} está estado de download acima de {f"{getSize(downloadStat):.1f}"}!!!',
             'issuetype': {"id":"10022"},
         }
-    new_issue = jira_connection.create_issue(fields=issue_dict)
+        #new_issue = jira_connection.create_issue(fields=issue_dict)
 
     if(getSize(dataSent) > 200 ):
         mensagemDataSent = {"text": f"""
             ⚙️ === ALERTA❗️
-            Descrição => Recebimento de pacotes está sobrecarregando!
+            Descrição => Envio de pacotes está sobrecarregando!
             """}
-    chatMonitoramentoDataSent = "https://hooks.slack.com/services/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"
-    postMsgDataSent = requests.post(chatMonitoramentoDataSent, data=json.dumps(mensagemDataSent))
+        chatMonitoramentoDataSent = "https://hooks.slack.com/services/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"
+        #postMsgDataSent = requests.post(chatMonitoramentoDataSent, data=json.dumps(mensagemDataSent))
     
-    issue_dict = {
+        issue_dict = {
             'project': {'key': 'SUP'},
-            'summary': f"Rede com envio de pacotes acima de {getSize(dataSent)}!!!",
-            'description': f'A rede do servidor {codigoServidor} está envio de pacotes acima de {getSize(dataSent)}!!!',
+            'summary': f"Rede com envio de pacotes acima de {f'{getSize(dataSent)}:.1f'}!!!",
+            'description': f'A rede do servidor {codigoServidor} está envio de pacotes acima de {f"{getSize(dataSent)}:.1f"}!!!',
             'issuetype': {"id":"10022"},
         }
-    new_issue = jira_connection.create_issue(fields=issue_dict)
+        #new_issue = jira_connection.create_issue(fields=issue_dict)
 
     if(getSize(dataRecv) > 100 ):
         mensagemDataRecv = {"text": f"""
             ⚙️ === ALERTA❗️
-            Descrição => Envio de pacotes está sobrecarregando!
+            Descrição => Recebimento de pacotes está sobrecarregando!
             """}
-    chatMonitoramentoDataRecv = "https://hooks.slack.com/services/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"
-    postMsgDataRecv = requests.post(chatMonitoramentoDataRecv, data=json.dumps(mensagemDataRecv))
+        chatMonitoramentoDataRecv = "https://hooks.slack.com/services/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"
+        #postMsgDataRecv = requests.post(chatMonitoramentoDataRecv, data=json.dumps(mensagemDataRecv))
     
-    issue_dict = {
+        issue_dict = {
             'project': {'key': 'SUP'},
-            'summary': f"Rede com recebimento de pacotes acima de {getSize(dataRecv)}!!!",
-            'description': f'A rede do servidor {codigoServidor} está recebimento de pacotes acima de {getSize(dataRecv)}!!!',
+            'summary': f"Rede com recebimento de pacotes acima de {f'{getSize(dataRecv)}:.1f'}!!!",
+            'description': f'A rede do servidor {codigoServidor} está recebimento de pacotes acima de {f"{getSize(dataRecv)}:.1f"}!!!',
             'issuetype': {"id":"10022"},
         }
-    new_issue = jira_connection.create_issue(fields=issue_dict)
+        #new_issue = jira_connection.create_issue(fields=issue_dict)
 
 # ------------------ Inserindo no BD -------------------
 
-    # mycursor.execute(f"INSERT INTO rede (mac_address, ip_publico, vel_upload, vel_download, ping, uploadStat, downloadStat, dataSent, dataRecv, data_registro, codigo) VALUES ('{mac_address}', '{ip_address}',, {vel_upload:.2f}, {vel_download:.2f}, {ping:.2f}, {getSize(uploadStat)}, {getSize(downloadStat)}, {getSize(dataSent)}, {getSize(dataRecv)}, '{dataHoraNow}', {codigoServidor});")
-    # mydb.commit()
-    # print(mycursor.rowcount, "rede inserted.")
+    mycursor.execute(f"INSERT INTO rede (mac_address, ip_publico, vel_upload, vel_download, ping, uploadStat, downloadStat, dataSent, dataRecv, data_registro, codigo) VALUES ('{mac_address}', '{ip_address}',, {vel_upload:.2f}, {vel_download:.2f}, {ping:.2f}, {f'{getSize(uploadStat):.1f}'}, {f'{getSize(downloadStat):.1f}'}, {f'{getSize(dataSent):.1f}'}, {f'{getSize(dataRecv):.1f}'}, '{dataHoraNow}', {codigoServidor});")
+    mydb.commit()
+    print(mycursor.rowcount, "rede inserted.")
 
-    # mycursor.execute(f"INSERT INTO localizacao (pais, estado, cidade, valor_temperatura, data_registro, codigo) VALUES ('{valorTemperatura}', '{dataHoraNow}', {codigoServidor});")
-    # mydb.commit()
-    # print(mycursor.rowcount, "temperatura inserted.")
+    mycursor.execute(f"INSERT INTO localizacao (pais, estado, cidade, valor_temperatura, data_registro, codigo) VALUES ({pais}, {estado}, {cidade}, '{valorTemperatura}', '{dataHoraNow}', {codigoServidor});")
+    mydb.commit()
+    print(mycursor.rowcount, "localizacao inserted.")
