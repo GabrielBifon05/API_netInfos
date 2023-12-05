@@ -49,13 +49,11 @@ class ConexaoBancoDeDados:
             print("Erro na conexão no SQL Server", err.msg)
             return None
 
-import Conexao as conexao
-
-conexao = conexao.ConexaoBancoDeDados(
+conexao = ConexaoBancoDeDados(
     host="44.218.55.108", user="sa", password="urubu100", port=1443, database="ScriptGCT"
 )
 
-conexao.conexaoMySql()
+conexao.conexaoSqlServer()
 cursor = conexao.conexao.cursor()
 
 
