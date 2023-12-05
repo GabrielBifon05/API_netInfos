@@ -11,6 +11,55 @@ import socket
 import struct
 import mysql.connector
 import json
+import pymssql
+import pymssql
+
+class ConexaoBancoDeDados:
+    def __init__(self, host, user, password, port, database):
+        self.host = host
+        self.user = user
+        self.password = password
+        self.port = port
+        self.database = database
+
+    def conexaoMySql(self):
+        try:
+            self.conexao = pymysql.connect(
+                host=self.host,
+                user=self.user,
+                password=self.password,
+                port=self.port,
+                database=self.database,
+            )
+        except mysql.connector.Error as err:
+            print("Erro na conexão no MYSQL", err.msg)
+            return None
+        return self.conexao
+
+    def conexaoSqlServer(self, host, database, user, password):
+        try:
+            self.conn = pymssql.connect(
+                server=host,
+                database=database,
+                user=user,
+                password=password,
+            )
+            print("A conexão SQL Server realizada com sucesso!")
+            return self.conn
+        except pymssql.OperationalError as err:
+            print("Erro na conexão no SQL Server", err.msg)
+            return None
+
+import Conexao as conexao
+
+conexao = conexao.ConexaoBancoDeDados(
+    host="44.218.55.108", user="sa", password="urubu100", port=1443, database="ScriptGCT"
+)
+
+conexao.conexaoMySql()
+cursor = conexao.conexao.cursor()
+
+
 
 jira_token = "ATATT3xFfGF0UmWAi-LW5-Bx1_c9B-sQs5GV_f-eKkA6clUdYwh-r0hlBKeRg2EJQZ9d9YtVZbf4UsWfopgvkj8nBdiHjX_9vM_ZnBg2zmOnFLA-mH_Ri_efGg-QjKJFnSdZwDfem7vP3LDi8nDIiQG1GE3QEDrEN8tZZ8_xeWUVIm_VuGEgKJo=6345AAD2"
 url = "https://greycloudtransactions.atlassian.net/rest/api/2/search"
@@ -280,10 +329,12 @@ while True:
 
 # ------------------ Inserindo no BD -------------------
 
-    mycursor.execute(f"INSERT INTO rede (mac_address, ip_publico, vel_upload, vel_download, ping, uploadStat, downloadStat, dataSent, dataRecv, data_registro, codigo) VALUES ('{mac_address}', '{ip_address}',, {vel_upload:.2f}, {vel_download:.2f}, {ping:.2f}, {f'{getSize(uploadStat):.1f}'}, {f'{getSize(downloadStat):.1f}'}, {f'{getSize(dataSent):.1f}'}, {f'{getSize(dataRecv):.1f}'}, '{dataHoraNow}', {codigoServidor});")
-    mydb.commit()
-    print(mycursor.rowcount, "rede inserted.")
+    cursor.execute(f"INSERT INTO rede (mac_address, ip_publico, vel_upload, vel_download, ping, uploadStat, downloadStat, dataSent, dataRecv, data_registro, codigo) VALUES ('{mac_address}', '{ip_address}',, {vel_upload:.2f}, {vel_download:.2f}, {ping:.2f}, {f'{getSize(uploadStat):.1f}'}, {f'{getSize(downloadStat):.1f}'}, {f'{getSize(dataSent):.1f}'}, {f'{getSize(dataRecv):.1f}'}, '{dataHoraNow}', {codigoServidor});")
+    conexao.conexao.commit()
+    print(cursor.rowcount, "rede inserted.")
 
-    mycursor.execute(f"INSERT INTO localizacao (pais, estado, cidade, valor_temperatura, data_registro, codigo) VALUES ({pais}, {estado}, {cidade}, '{valorTemperatura}', '{dataHoraNow}', {codigoServidor});")
-    mydb.commit()
-    print(mycursor.rowcount, "localizacao inserted.")
+    cursor.execute(f"INSERT INTO localizacao (pais, estado, cidade, valor_temperatura, data_registro, codigo) VALUES ({pais}, {estado}, {cidade}, '{valorTemperatura}', '{dataHoraNow}', {codigoServidor});")
+    conexao.conexao.commit()
+    print(cursor.rowcount, "localizacao inserted.")
+
+
