@@ -12,7 +12,7 @@ import struct
 import mysql.connector
 import json
 import pymssql
-import pymssql
+import pymysql
 
 class ConexaoBancoDeDados:
     def __init__(self, host, user, password, port, database):
