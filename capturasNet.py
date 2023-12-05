@@ -6,7 +6,6 @@ import speedtest
 import psutil
 import time
 import os
-import fcntl
 import socket
 import struct
 import mysql.connector
