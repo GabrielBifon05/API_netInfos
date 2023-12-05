@@ -53,7 +53,7 @@ conexao = ConexaoBancoDeDados(
     host="44.218.55.108", user="sa", password="urubu100", port=1443, database="ScriptGCT"
 )
 
-conexao.conexaoSqlServer()
+conexao.conexaoSqlServer("44.218.55.108", "sa", "urubu100", 1443, "ScriptGCT")
 cursor = conexao.conexao.cursor()
 
 
