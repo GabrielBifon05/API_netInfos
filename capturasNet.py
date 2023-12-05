@@ -326,11 +326,11 @@ while True:
 
 # ------------------ Inserindo no BD -------------------
 
-    cursor.execute(f"INSERT INTO rede (mac_address, ip_publico, vel_upload, vel_download, ping, uploadStat, downloadStat, dataSent, dataRecv, data_registro, codigo) VALUES ('{mac_address}', '{ip_address}',, {vel_upload:.2f}, {vel_download:.2f}, {ping:.2f}, {f'{getSize(uploadStat):.1f}'}, {f'{getSize(downloadStat):.1f}'}, {f'{getSize(dataSent):.1f}'}, {f'{getSize(dataRecv):.1f}'}, '{dataHoraNow}', {codigoServidor});")
+    cursor.execute(f"INSERT INTO rede (mac_address, ip_publico, vel_upload, vel_download, ping, uploadStat, downloadStat, dataSent, dataRecv, data_registro, fk_servidor) VALUES ('{mac_address}', '{ip_address}',, {vel_upload:.2f}, {vel_download:.2f}, {ping:.2f}, {f'{getSize(uploadStat):.1f}'}, {f'{getSize(downloadStat):.1f}'}, {f'{getSize(dataSent):.1f}'}, {f'{getSize(dataRecv):.1f}'}, '{dataHoraNow}', 1);")
     conexao.conexao.commit()
     print(cursor.rowcount, "rede inserted.")
 
-    cursor.execute(f"INSERT INTO localizacao (pais, estado, cidade, valor_temperatura, data_registro, codigo) VALUES ({pais}, {estado}, {cidade}, '{valorTemperatura}', '{dataHoraNow}', {codigoServidor});")
+    cursor.execute(f"INSERT INTO localizacao (pais, estado, cidade, valor_temperatura, data_registro, fk_servidor) VALUES ({pais}, {estado}, {cidade}, '{valorTemperatura}', '{dataHoraNow}', 1);")
     conexao.conexao.commit()
     print(cursor.rowcount, "localizacao inserted.")
 
