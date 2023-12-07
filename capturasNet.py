@@ -7,55 +7,20 @@ import psutil
 import time
 import os
 import socket
-import struct
 import mysql.connector
-import json
-import pymssql
-import pymysql
 
-class ConexaoBancoDeDados:
-    def __init__(self, host, user, password, port, database):
-        self.host = host
-        self.user = user
-        self.password = password
-        self.port = port
-        self.database = database
+import pyodbc
 
-    def conexaoMySql(self):
-        try:
-            self.conexao = pymysql.connect(
-                host=self.host,
-                user=self.user,
-                password=self.password,
-                port=self.port,
-                database=self.database,
-            )
-        except mysql.connector.Error as err:
-            print("Erro na conexão no MYSQL", err.msg)
-            return None
-        return self.conexao
+server = '44.218.55.108'
+database = 'scriptgct'
+username = 'sa'
+password = 'urubu100'
 
-    def conexaoSqlServer(self, host, database, user, password):
-        try:
-            self.conn = pymssql.connect(
-                server=host,
-                database=database,
-                user=user,
-                password=password,
-            )
-            print("A conexão SQL Server realizada com sucesso!")
-            return self.conn
-        except pymssql.OperationalError as err:
-            print("Erro na conexão no SQL Server", err.msg)
-            return None
+connection_string = f'DRIVER=ODBC Driver 17 for SQL Server;SERVER={server};DATABASE={database};UID={username};PWD={password}'
 
-conexao = ConexaoBancoDeDados(
-    host="44.218.55.108", user="sa", password="urubu100", port=1443, database="ScriptGCT"
-)
-
-conexao.conexaoSqlServer("44.218.55.108", "sa", "urubu100", 1443, "ScriptGCT")
-cursor = conexao.conexao.cursor()
-
+# Estabelece a conexão
+conn = pyodbc.connect(connection_string)
+cursor = conn.cursor()
 
 
 jira_token = "ATATT3xFfGF0UmWAi-LW5-Bx1_c9B-sQs5GV_f-eKkA6clUdYwh-r0hlBKeRg2EJQZ9d9YtVZbf4UsWfopgvkj8nBdiHjX_9vM_ZnBg2zmOnFLA-mH_Ri_efGg-QjKJFnSdZwDfem7vP3LDi8nDIiQG1GE3QEDrEN8tZZ8_xeWUVIm_VuGEgKJo=6345AAD2"
@@ -128,7 +93,7 @@ while True:
     # ------------------ PSUTIL (mac_address, IP, upload, download, dataRecv, dataSent) -------------------
     
 
-    mydb = mysql.connector.connect(
+    """ mydb = mysql.connector.connect(
         host = "localhost",
         user = "aluno",
         password = "sptech",
@@ -136,7 +101,7 @@ while True:
         database = "ScriptGCT"
     )
 
-    mycursor = mydb.cursor()
+    mycursor = mydb.cursor() """
 
     # mycursor.execute("CREATE TABLE IF NOT EXISTS localizacao(id_temperatura INT PRIMARY KEY AUTO_INCREMENT NOT NULL, pais VARCHAR(100), estado VARCHAR(100), cidade VARCHAR(100), valor_temperatura DECIMAL(4,2), data_registro DATETIME, fk_servidor INT NOT NULL, FOREIGN KEY (fk_servidor) REFERENCES servidor (id_servidor));")
 
@@ -201,13 +166,14 @@ while True:
     totalDataSent = netStats2.bytes_sent
     totalDataRecv = netStats2.bytes_recv
 
-    print("Upload", f"{getSize(uploadStat):.1}f") #KB
-    print("Download", f"{getSize(downloadStat):.1}f") #KB
+    print("Upload", getSize(uploadStat)) #KB
+    print("Download", getSize(downloadStat)) #KB
 
-    print("Data Sent", f"{getSize(dataSent):.2}f") #MB
-    print("Data Recive", f"{getSize(dataRecv):.2}f") #MB
+    print("Data Sent", getSize(dataSent)) #MB
+    print("Data Recive", getSize(dataRecv)) #MB
 
-    dataHoraNow = datetime.now()
+    now = datetime.now()
+    dataHoraNow = now.strftime("%d/%m/%Y %H:%M:%S")
 # ------------------ Alertas no JIRA/Slack -------------------
 
     if(vel_download < 100 ):
@@ -324,12 +290,12 @@ while True:
 
 # ------------------ Inserindo no BD -------------------
 
-    cursor.execute(f"INSERT INTO rede (mac_address, ip_publico, vel_upload, vel_download, ping, uploadStat, downloadStat, dataSent, dataRecv, data_registro, fk_servidor) VALUES ('{mac_address}', '{ip_address}',, {vel_upload:.2f}, {vel_download:.2f}, {ping:.2f}, {f'{getSize(uploadStat):.1f}'}, {f'{getSize(downloadStat):.1f}'}, {f'{getSize(dataSent):.1f}'}, {f'{getSize(dataRecv):.1f}'}, '{dataHoraNow}', 1);")
-    conexao.conexao.commit()
+    cursor.execute(f"INSERT INTO rede (mac_address, ip_publico, vel_upload, vel_download, ping, uploadStat, downloadStat, dataSent, dataRecv, data_registro, fk_codigo) VALUES ('{mac_address}', '{ip_address}', {vel_upload:.2f}, {vel_download:.2f}, {ping:.2f}, {f'{getSize(uploadStat):.1f}'}, {f'{getSize(downloadStat):.1f}'}, {f'{getSize(dataSent):.1f}'}, {f'{getSize(dataRecv):.1f}'}, '{dataHoraNow}', '{codigoServidor}');")
+    conn.commit()
     print(cursor.rowcount, "rede inserted.")
 
-    cursor.execute(f"INSERT INTO localizacao (pais, estado, cidade, valor_temperatura, data_registro, fk_servidor) VALUES ({pais}, {estado}, {cidade}, '{valorTemperatura}', '{dataHoraNow}', 1);")
-    conexao.conexao.commit()
+    cursor.execute(f"INSERT INTO localizacao (pais, estado, cidade, valor_temperatura, data_registro, fk_codigo) VALUES ('{pais}', '{estado}', '{cidade}', {valorTemperatura}, '{dataHoraNow}', '{codigoServidor}');")
+    conn.commit()
     print(cursor.rowcount, "localizacao inserted.")
 
 
