@@ -7,6 +7,9 @@ import psutil
 import time
 import os
 import socket
+import fcntl
+import struct
+import binascii
 import mysql.connector
 
 import pyodbc
@@ -137,15 +140,17 @@ while True:
 
     def getHwAddr(ifname):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        info = fcntl.ioctl(s.fileno(), 0x8927,  struct.pack('256s', bytes(ifname, 'utf-8')[:15]))
+        return ':'.join('%02x' % b for b in info[18:24])
 
-        netStats1 = psutil.net_io_counters()
-        dataSent = netStats1.bytes_sent
-        dataRecv = netStats1.bytes_recv
-        addresses = psutil.net_if_addrs()
-        addresses = psutil.net_if_addrs()
-        stats = psutil.net_if_stats()
-        time.sleep(1)
-        os.system("clear")
+    netStats1 = psutil.net_io_counters()
+    dataSent = netStats1.bytes_sent
+    dataRecv = netStats1.bytes_recv
+    addresses = psutil.net_if_addrs()
+    addresses = psutil.net_if_addrs()
+    stats = psutil.net_if_stats()
+    time.sleep(1)
+    os.system("clear")
 
     
 
