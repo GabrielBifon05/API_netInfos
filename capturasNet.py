@@ -74,21 +74,6 @@ while True:
     print(f"Temperatura: {valorTemperatura}")
 
 
-    # ------------------ SpeedTest (vel_download, vel_upload, ping) -------------------
-
-
-    st = speedtest.Speedtest(secure = True)
-
-    vel_download = st.download() / 10**6
-    vel_upload = st.upload() / 10**6
-    ping = st.results.ping
-
-    print(f'  |Velocidade de download: {vel_download:.2f} Mbps|')
-    print(f'  |Velocidade de upload: {vel_upload:.2f} Mbps|')
-    print(f'  |Ping: {ping:.2f}|')
-    print("----------------------------------------")
-
-
 
     # ------------------ PSUTIL (mac_address, IP, upload, download, dataRecv, dataSent) -------------------
     
@@ -103,9 +88,34 @@ while True:
 
     mycursor = mydb.cursor() """
 
-    # mycursor.execute("CREATE TABLE IF NOT EXISTS localizacao(id_temperatura INT PRIMARY KEY AUTO_INCREMENT NOT NULL, pais VARCHAR(100), estado VARCHAR(100), cidade VARCHAR(100), valor_temperatura DECIMAL(4,2), data_registro DATETIME, fk_servidor INT NOT NULL, FOREIGN KEY (fk_servidor) REFERENCES servidor (id_servidor));")
+    # mycursor.execute("
+    # CREATE TABLE IF NOT EXISTS localizacao(
+    # id_temperatura INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    # pais VARCHAR(100),
+    # estado VARCHAR(100),
+    # cidade VARCHAR(100),
+    # valor_temperatura DECIMAL(4,2),
+    # data_registro DATETIME,
+    # fk_servidor INT NOT NULL,
+    # FOREIGN KEY (fk_servidor) REFERENCES servidor (id_servidor));
+    # ")
 
-    # mycursor.execute("CREATE TABLE IF NOT EXISTS rede(id_rede INT PRIMARY KEY AUTO_INCREMENT NOT NULL,  mac_address VARCHAR(100), ip_publico VARCHAR(100), vel_upload DECIMAL(4,2), vel_download DECIMAL(4,2), ping DECIMAL(4,2), uploadStat DECIMAL(5,2), downloadStat DECIMAL(5,2), dataSent DECIMAL(5,2), dataRecv DECIMAL(5,2), data_registro DATETIME, fk_servidor INT NOT NULL, FOREIGN KEY (fk_servidor) REFERENCES servidor (id_servidor));")
+    # mycursor.execute("
+    # CREATE TABLE IF NOT EXISTS rede(
+    # id_rede INT PRIMARY KEY AUTO_INCREMENT NOT NULL,  
+    # mac_address VARCHAR(100),
+    # ip_publico VARCHAR(100),
+    # vel_upload DECIMAL(4,2),
+    # vel_download DECIMAL(4,2),
+    # ping DECIMAL(4,2),
+    # uploadStat DECIMAL(5,2),
+    # downloadStat DECIMAL(5,2),
+    # dataSent DECIMAL(5,2),
+    # dataRecv DECIMAL(5,2),
+    # data_registro DATETIME,
+    # fk_servidor INT NOT NULL,
+    # FOREIGN KEY (fk_servidor) REFERENCES servidor (id_servidor));
+    # ")
 
     size = ['bytes', 'KB', 'MB', 'GB', 'TB']
     def getSize(bytes):
@@ -176,54 +186,7 @@ while True:
     dataHoraNow = now.strftime("%d/%m/%Y %H:%M:%S")
 # ------------------ Alertas no JIRA/Slack -------------------
 
-    if(vel_download < 100 ):
-        mensagemVel_download = {"text": f"""
-            ⚙️ === ALERTA❗️
-            Descrição => Velocidade de download está sobrecarregando!
-            """}
-        chatMonitoramentoVel_download = "https://hooks.slack.com/services/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"
-        #postMsgVel_download = requests.post(chatMonitoramentoVel_download, data=json.dumps(mensagemVel_download))
-
-        issue_dict = {
-            'project': {'key': 'SUP'},
-            'summary': f"Rede com velocidade de download abaixo de {vel_download:.2f} Mbps!!!",
-            'description': f'A rede do servidor {codigoServidor} está  velocidade de download abaixo de {vel_download:.2f} Mbps!!!',
-            'issuetype': {"id":"10022"},
-        }
-        #new_issue = jira_connection.create_issue(fields=issue_dict)
-
-    if(vel_upload < 100 ):
-        mensagemVel_upload = {"text": f"""
-            ⚙️ === ALERTA❗️
-            Descrição => Velocidade de upload está sobrecarregando!
-            """}
-        chatMonitoramentoVel_upload = "https://hooks.slack.com/services/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"
-        #postMsgVel_upload = requests.post(chatMonitoramentoVel_upload, data=json.dumps(mensagemVel_upload))
-
-        issue_dict = {
-            'project': {'key': 'SUP'},
-            'summary': f"Rede com velocidade de upload abaixo de {vel_upload:.2f} Mbps!!!",
-            'description': f'A rede do servidor {codigoServidor} está  velocidade de upload abaixo de {vel_upload:.2f} Mbps!!!',
-            'issuetype': {"id":"10022"},
-        }
-        #new_issue = jira_connection.create_issue(fields=issue_dict)
-
-    if(ping > 50 ):
-        mensagemPing = {"text": f"""
-            ⚙️ === ALERTA❗️
-            Descrição => Envio de pacotes está sobrecarregando!
-            """}
-        chatMonitoramentoPing = "https://hooks.slack.com/services/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"
-        #postMsgPing = requests.post(chatMonitoramentoPing, data=json.dumps(mensagemPing))
-
-        issue_dict = {
-            'project': {'key': 'SUP'},
-            'summary': f"Rede com ping acima de {ping:.2f}!!!",
-            'description': f'A rede do servidor {codigoServidor} está com ping acima de {ping:.2f}!!!',
-            'issuetype': {"id":"10022"},
-        }
-        #new_issue = jira_connection.create_issue(fields=issue_dict)
-
+    
     if(getSize(uploadStat) > 70 ):
         mensagemUploadStat = {"text": f"""
             ⚙️ === ALERTA❗️
@@ -290,7 +253,7 @@ while True:
 
 # ------------------ Inserindo no BD -------------------
 
-    cursor.execute(f"INSERT INTO rede (mac_address, ip_publico, vel_upload, vel_download, ping, uploadStat, downloadStat, dataSent, dataRecv, data_registro, fk_servidor) VALUES ('{mac_address}', '{ip_address}', {vel_upload:.2f}, {vel_download:.2f}, {ping:.2f}, {f'{getSize(uploadStat):.1f}'}, {f'{getSize(downloadStat):.1f}'}, {f'{getSize(dataSent):.1f}'}, {f'{getSize(dataRecv):.1f}'}, '{dataHoraNow}', (SELECT id_servidor FROM servidor WHERE codigo = '{codigoServidor}'));")
+    cursor.execute(f"INSERT INTO rede (mac_address, ip_publico, uploadStat, downloadStat, dataSent, dataRecv, data_registro, fk_servidor) VALUES ('{mac_address}', '{ip_address}', {f'{getSize(uploadStat):.1f}'}, {f'{getSize(downloadStat):.1f}'}, {f'{getSize(dataSent):.1f}'}, {f'{getSize(dataRecv):.1f}'}, '{dataHoraNow}', (SELECT id_servidor FROM servidor WHERE codigo = '{codigoServidor}'));")
     conn.commit()
     print(cursor.rowcount, "rede inserted.")
 
