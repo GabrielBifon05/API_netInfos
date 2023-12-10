@@ -1,18 +1,98 @@
-# ---------------------------- JIRA ---------------------------- 
+# ---------------------------- PREPARANDO AMBIENTE ---------------------------- 
+import subprocess
+import sys
 
-from jira import JIRA
-from datetime import datetime
-import json
-import psutil
-import time
-import os
-import socket
-import fcntl
-import struct
-import mysql.connector
+def install_package(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
-import pyodbc
+try:
+    from jira import JIRA
+except ImportError:
+    print("A biblioteca jira não está instalada. Instalando agora...")
+    install_package("jira")
+    from jira import JIRA
+try:
+    from datetime import datetime
+except ImportError:
+    print("A biblioteca datetime não está instalada. Instalando agora...")
+    install_package("datetime")
+    from datetime import datetime
+try:
+    import json
+except ImportError:
+    print("A biblioteca json não está instalada. Instalando agora...")
+    install_package("json")
+    import json
+try:
+    import psutil
+except ImportError:
+    print("A biblioteca psutil não está instalada. Instalando agora...")
+    install_package("psutil")
+    import psutil
+try:
+    import time
+except ImportError:
+    print("A biblioteca time não está instalada. Instalando agora...")
+    install_package("time")
+    import time
+try:
+    import os
+except ImportError:
+    print("A biblioteca os não está instalada. Instalando agora...")
+    install_package("os")
+    import os
+try:
+    import socket
+except ImportError:
+    print("A biblioteca socket não está instalada. Instalando agora...")
+    install_package("socket")
+    import socket
+try:
+    import fcntl
+except ImportError:
+    print("A biblioteca fcntl não está instalada. Instalando agora...")
+    install_package("fcntl")
+    import fcntl
+try:
+    import struct
+except ImportError:
+    print("A biblioteca struct não está instalada. Instalando agora...")
+    install_package("struct")
+    import struct
+try:
+    import mysql.connector
+except ImportError:
+    print("A biblioteca mysql.connector não está instalada. Instalando agora...")
+    install_package("mysql.connector")
+    import mysql.connector
+try:
+    import pyodbc
+except ImportError:
+    print("A biblioteca pyodbc não está instalada. Instalando agora...")
+    install_package("pyodbc")
+    import pyodbc
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    print("A biblioteca bs4 não está instalada. Instalando agora...")
+    install_package("bs4")
+    from bs4 import BeautifulSoup
+try:
+    import requests
+except ImportError:
+    print("A biblioteca requests não está instalada. Instalando agora...")
+    install_package("requests")
+    import requests
+try:
+    from urllib.request import urlopen
+except ImportError:
+    print("A biblioteca urllib.request não está instalada. Instalando agora...")
+    install_package("urllib.request")
+    from urllib.request import urlopen
 
+
+
+# ---------------------------- ESTABELECENDO CONEXÃO LOCAL E REMOTA ----------------------------
 server = '44.218.55.108'
 database = 'scriptgct'
 username = 'sa'
@@ -20,7 +100,6 @@ password = 'urubu100'
 
 connection_string = f'DRIVER=ODBC Driver 17 for SQL Server;SERVER={server};DATABASE={database};UID={username};PWD={password}'
 
-# Estabelece a conexão
 conn = pyodbc.connect(connection_string)
 cursor = conn.cursor()
 
@@ -68,6 +147,8 @@ mycursor.execute("""
     fk_servidor INT NOT NULL,
     FOREIGN KEY (fk_servidor) REFERENCES servidor (id_servidor));
 """)
+
+# ---------------------------- JIRA ---------------------------- 
 
 jira_token = "ATATT3xFfGF0UmWAi-LW5-Bx1_c9B-sQs5GV_f-eKkA6clUdYwh-r0hlBKeRg2EJQZ9d9YtVZbf4UsWfopgvkj8nBdiHjX_9vM_ZnBg2zmOnFLA-mH_Ri_efGg-QjKJFnSdZwDfem7vP3LDi8nDIiQG1GE3QEDrEN8tZZ8_xeWUVIm_VuGEgKJo=6345AAD2"
 url = "https://greycloudtransactions.atlassian.net/rest/api/2/search"
@@ -197,8 +278,9 @@ while True:
     now = datetime.now()
     dataHoraNow = now.strftime("%d/%m/%Y %H:%M:%S")
     dataHoraNow_mysql = now.strftime("%Y/%m/%d %H:%M:%S")
-# ------------------ Alertas no JIRA/Slack -------------------
 
+
+# ------------------ Alertas no JIRA/Slack -------------------
     
     if(getSize(uploadStat) > 70 ):
         mensagemUploadStat = {"text": f"""
@@ -283,5 +365,3 @@ while True:
     mycursor.execute(f"INSERT INTO localizacao (pais, estado, cidade, valor_temperatura, data_registro, fk_servidor) VALUES ('{pais}', '{estado}', '{cidade}', {valorTemperatura}, '{dataHoraNow_mysql}', (SELECT id_servidor FROM servidor WHERE codigo = '{codigoServidor}'));")
     mydb.commit()
     print(mycursor.rowcount, "localizacao inserted.")
-
-
