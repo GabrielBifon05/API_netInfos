@@ -2,14 +2,13 @@
 
 from jira import JIRA
 from datetime import datetime
-import speedtest
+import json
 import psutil
 import time
 import os
 import socket
 import fcntl
 import struct
-import binascii
 import mysql.connector
 
 import pyodbc
@@ -25,6 +24,50 @@ connection_string = f'DRIVER=ODBC Driver 17 for SQL Server;SERVER={server};DATAB
 conn = pyodbc.connect(connection_string)
 cursor = conn.cursor()
 
+mydb = mysql.connector.connect(
+    host = "localhost",
+    user = "root",
+    password = "urubu100",
+    port = 3306,
+    database = "scriptgct"
+)
+
+mycursor = mydb.cursor()
+
+mycursor.execute("""
+    CREATE TABLE IF NOT EXISTS servidor(
+    id_servidor INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    codigo VARCHAR(100));
+""")
+
+mycursor.execute("""
+    CREATE TABLE IF NOT EXISTS localizacao(
+    id_temperatura INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    pais VARCHAR(100),
+    estado VARCHAR(100),
+    cidade VARCHAR(100),
+    valor_temperatura DECIMAL(4,2),
+    data_registro DATETIME,
+    fk_servidor INT NOT NULL,
+    FOREIGN KEY (fk_servidor) REFERENCES servidor (id_servidor));
+""")
+
+mycursor.execute("""
+    CREATE TABLE IF NOT EXISTS rede(
+    id_rede INT PRIMARY KEY AUTO_INCREMENT NOT NULL,  
+    mac_address VARCHAR(100),
+    ip_publico VARCHAR(100),
+    vel_upload DECIMAL(4,2),
+    vel_download DECIMAL(4,2),
+    ping DECIMAL(4,2),
+    uploadStat DECIMAL(5,2),
+    downloadStat DECIMAL(5,2),
+    dataSent DECIMAL(5,2),
+    dataRecv DECIMAL(5,2),
+    data_registro DATETIME,
+    fk_servidor INT NOT NULL,
+    FOREIGN KEY (fk_servidor) REFERENCES servidor (id_servidor));
+""")
 
 jira_token = "ATATT3xFfGF0UmWAi-LW5-Bx1_c9B-sQs5GV_f-eKkA6clUdYwh-r0hlBKeRg2EJQZ9d9YtVZbf4UsWfopgvkj8nBdiHjX_9vM_ZnBg2zmOnFLA-mH_Ri_efGg-QjKJFnSdZwDfem7vP3LDi8nDIiQG1GE3QEDrEN8tZZ8_xeWUVIm_VuGEgKJo=6345AAD2"
 url = "https://greycloudtransactions.atlassian.net/rest/api/2/search"
@@ -70,7 +113,9 @@ while True:
     r = requests.get(url)
     s= BeautifulSoup(r.text, "html.parser")
     valorTemperatura = s.find("div",class_="BNeawe").text
-    valorTemperatura = valorTemperatura[0:2]
+    valorTemperatura = valorTemperatura[0:2] #para quahndo não tiver alertas
+    # valorTemperatura = valorTemperatura[62:64] #para quando tiver alerta laranja
+    # valorTemperatura = valorTemperatura[63:65] #para quando tiver alerta vermelho
     print(f"País: {pais}")
     print(f"Estado: {estado}")
     print(f"Cidade: {cidade}")
@@ -81,44 +126,6 @@ while True:
     # ------------------ PSUTIL (mac_address, IP, upload, download, dataRecv, dataSent) -------------------
     
 
-    """ mydb = mysql.connector.connect(
-        host = "localhost",
-        user = "aluno",
-        password = "sptech",
-        port = 3306,
-        database = "ScriptGCT"
-    )
-
-    mycursor = mydb.cursor() """
-
-    # mycursor.execute("
-    # CREATE TABLE IF NOT EXISTS localizacao(
-    # id_temperatura INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
-    # pais VARCHAR(100),
-    # estado VARCHAR(100),
-    # cidade VARCHAR(100),
-    # valor_temperatura DECIMAL(4,2),
-    # data_registro DATETIME,
-    # fk_servidor INT NOT NULL,
-    # FOREIGN KEY (fk_servidor) REFERENCES servidor (id_servidor));
-    # ")
-
-    # mycursor.execute("
-    # CREATE TABLE IF NOT EXISTS rede(
-    # id_rede INT PRIMARY KEY AUTO_INCREMENT NOT NULL,  
-    # mac_address VARCHAR(100),
-    # ip_publico VARCHAR(100),
-    # vel_upload DECIMAL(4,2),
-    # vel_download DECIMAL(4,2),
-    # ping DECIMAL(4,2),
-    # uploadStat DECIMAL(5,2),
-    # downloadStat DECIMAL(5,2),
-    # dataSent DECIMAL(5,2),
-    # dataRecv DECIMAL(5,2),
-    # data_registro DATETIME,
-    # fk_servidor INT NOT NULL,
-    # FOREIGN KEY (fk_servidor) REFERENCES servidor (id_servidor));
-    # ")
 
     size = ['bytes', 'KB', 'MB', 'GB', 'TB']
     def getSize(bytes):
@@ -189,6 +196,7 @@ while True:
 
     now = datetime.now()
     dataHoraNow = now.strftime("%d/%m/%Y %H:%M:%S")
+    dataHoraNow_mysql = now.strftime("%Y/%m/%d %H:%M:%S")
 # ------------------ Alertas no JIRA/Slack -------------------
 
     
@@ -197,8 +205,8 @@ while True:
             ⚙️ === ALERTA❗️
             Descrição => Estado de upload está sobrecarregando!
             """}
-        chatMonitoramentoUploadStat = "https://hooks.slack.com/services/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"
-        #postMsgUploadStat = requests.post(chatMonitoramentoUploadStat, data=json.dumps(mensagemUploadStat))
+        chatMonitoramentoUploadStat = "https://hooks.slack.com/services/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"
+        postMsgUploadStat = requests.post(chatMonitoramentoUploadStat, data=json.dumps(mensagemUploadStat))
     
         issue_dict = {
             'project': {'key': 'SUP'},
@@ -213,8 +221,8 @@ while True:
             ⚙️ === ALERTA❗️
             Descrição => Estado de download está sobrecarregando!
             """}
-        chatMonitoramentoDownloadStat = "https://hooks.slack.com/services/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"
-        #postMsgDownloadStat = requests.post(chatMonitoramentoDownloadStat, data=json.dumps(mensagemDownloadStat))
+        chatMonitoramentoDownloadStat = "https://hooks.slack.com/services/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"
+        postMsgDownloadStat = requests.post(chatMonitoramentoDownloadStat, data=json.dumps(mensagemDownloadStat))
     
         issue_dict = {
             'project': {'key': 'SUP'},
@@ -229,8 +237,8 @@ while True:
             ⚙️ === ALERTA❗️
             Descrição => Envio de pacotes está sobrecarregando!
             """}
-        chatMonitoramentoDataSent = "https://hooks.slack.com/services/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"
-        #postMsgDataSent = requests.post(chatMonitoramentoDataSent, data=json.dumps(mensagemDataSent))
+        chatMonitoramentoDataSent = "https://hooks.slack.com/services/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"
+        postMsgDataSent = requests.post(chatMonitoramentoDataSent, data=json.dumps(mensagemDataSent))
     
         issue_dict = {
             'project': {'key': 'SUP'},
@@ -245,8 +253,8 @@ while True:
             ⚙️ === ALERTA❗️
             Descrição => Recebimento de pacotes está sobrecarregando!
             """}
-        chatMonitoramentoDataRecv = "https://hooks.slack.com/services/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"
-        #postMsgDataRecv = requests.post(chatMonitoramentoDataRecv, data=json.dumps(mensagemDataRecv))
+        chatMonitoramentoDataRecv = "https://hooks.slack.com/services/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"
+        postMsgDataRecv = requests.post(chatMonitoramentoDataRecv, data=json.dumps(mensagemDataRecv))
     
         issue_dict = {
             'project': {'key': 'SUP'},
@@ -256,7 +264,7 @@ while True:
         }
         #new_issue = jira_connection.create_issue(fields=issue_dict)
 
-# ------------------ Inserindo no BD -------------------
+# ------------------ Inserindo no SQL Server -------------------
 
     cursor.execute(f"INSERT INTO rede (mac_address, ip_publico, uploadStat, downloadStat, dataSent, dataRecv, data_registro, fk_servidor) VALUES ('{mac_address}', '{ip_address}', {f'{getSize(uploadStat):.1f}'}, {f'{getSize(downloadStat):.1f}'}, {f'{getSize(dataSent):.1f}'}, {f'{getSize(dataRecv):.1f}'}, '{dataHoraNow}', (SELECT id_servidor FROM servidor WHERE codigo = '{codigoServidor}'));")
     conn.commit()
@@ -265,5 +273,15 @@ while True:
     cursor.execute(f"INSERT INTO localizacao (pais, estado, cidade, valor_temperatura, data_registro, fk_servidor) VALUES ('{pais}', '{estado}', '{cidade}', {valorTemperatura}, '{dataHoraNow}', (SELECT id_servidor FROM servidor WHERE codigo = '{codigoServidor}'));")
     conn.commit()
     print(cursor.rowcount, "localizacao inserted.")
+
+# ------------------ Inserindo no MySQL -------------------
+
+    mycursor.execute(f"INSERT INTO rede (mac_address, ip_publico, uploadStat, downloadStat, dataSent, dataRecv, data_registro, fk_servidor) VALUES ('{mac_address}', '{ip_address}', {f'{getSize(uploadStat):.1f}'}, {f'{getSize(downloadStat):.1f}'}, {f'{getSize(dataSent):.1f}'}, {f'{getSize(dataRecv):.1f}'}, '{dataHoraNow_mysql}', (SELECT id_servidor FROM servidor WHERE codigo = '{codigoServidor}'));")
+    mydb.commit()
+    print(mycursor.rowcount, "rede inserted.")
+
+    mycursor.execute(f"INSERT INTO localizacao (pais, estado, cidade, valor_temperatura, data_registro, fk_servidor) VALUES ('{pais}', '{estado}', '{cidade}', {valorTemperatura}, '{dataHoraNow_mysql}', (SELECT id_servidor FROM servidor WHERE codigo = '{codigoServidor}'));")
+    mydb.commit()
+    print(mycursor.rowcount, "localizacao inserted.")
 
 
